@@ -1,0 +1,433 @@
+{
+  "lessons": [
+    {
+      "id": "dsa-maps",
+      "title": "Hash maps & sets: turn repeated searching into remembering",
+      "track": "dsa",
+      "minutes": 40,
+      "priority": "core",
+      "summary": "Choose a Set for membership and a Map for associated information. Learn the pattern behind Two Sum, duplicates, anagrams and grouping.",
+      "sections": [
+        {
+          "title": "Recognize the question",
+          "html": "<p>A brute-force solution often asks the same question repeatedly: have I seen this number, where did I see it, or how many times did it occur? A hash table lets you record that answer as you scan. Use a <code>Set</code> when only presence matters. Use a <code>Map</code> when a key needs an associated index, count, list or node. In an interview, explain the repeated work before proposing the data structure.</p><p>For Contains Duplicate, compare every pair first: that takes quadratic time. A set improves this to one pass with expected constant-time membership checks. For Two Sum, a set alone cannot return the earlier index, so map each value to its index. For Valid Anagram, presence alone loses multiplicity: <code>aab</code> and <code>abb</code> have the same distinct letters. Use counts.</p>"
+        },
+        {
+          "title": "The JavaScript operations that matter",
+          "html": "<pre><code>const seen = new Set();\nseen.add(7);\nseen.has(7); // true\nseen.delete(7);\n\nconst counts = new Map();\ncounts.set('a', (counts.get('a') ?? 0) + 1);\ncounts.has('a'); // true\ncounts.get('missing'); // undefined</code></pre><p>Check existence with <code>has</code>, not the truthiness of <code>get</code>: index zero is a valid stored answer. A Map treats object keys by identity. Two separately created objects with identical fields are different keys. String keys are convenient when you can build an unambiguous signature, such as a sorted sequence of letters.</p>"
+        },
+        {
+          "title": "Dry-run Two Sum before coding",
+          "html": "<p>For numbers <code>[2, 7, 11, 15]</code> and target <code>9</code>, start with an empty map. At index zero, the complement is seven. It is absent, so store <code>2 → 0</code>. At index one, the complement is two. It is present, so return <code>[0, 1]</code>. Look up the complement before storing the current value. That order prevents using the same element twice and still handles <code>[3, 3]</code> with target six.</p><p>The invariant is: before processing index i, the map contains values from earlier indices only. State this sentence aloud; it explains both correctness and the order of operations. Expected time is O(n), extra space O(n). Hash-table operations are conventionally analyzed as expected or average constant time; do not claim a universal worst-case guarantee for every implementation.</p>"
+        },
+        {
+          "title": "Move from answers to reusable patterns",
+          "html": "<p>For Group Anagrams, create a canonical key: sort the letters of each word. Words with the same key belong in the same list. For lowercase English letters, a 26-count signature can avoid sorting, but clarify that input assumption first. For Longest Substring Without Repeating Characters, combine a map of last positions with a moving left boundary. Remembering alone is not enough; the boundary must never move backward.</p><p>Finish by testing an empty input where allowed, one item, repeated values, negative numbers and an answer involving index zero. Clarify whether strings are restricted to English letters. The exercises use Unicode code-point iteration where useful; user-perceived characters such as combined emoji may require grapheme segmentation in a real application.</p>"
+        }
+      ],
+      "checks": [
+        "I can explain why Two Sum needs a Map rather than only a Set.",
+        "I check the complement before inserting the current element.",
+        "I use has() when a stored value could be zero.",
+        "I can compare membership, counting and grouping patterns."
+      ],
+      "questions": [
+        {
+          "q": "Why is sorting not always the best approach for Two Sum?",
+          "a": "Sorting can work with two pointers, but costs O(n log n), may mutate input, and needs original indices preserved. A one-pass map directly returns original indices in expected O(n)."
+        },
+        {
+          "q": "Why can a set not prove two strings are anagrams?",
+          "a": "A set discards frequency. The strings aab and abb contain the same distinct characters but different counts."
+        },
+        {
+          "q": "What is the main tradeoff of a hash map?",
+          "a": "Extra memory buys faster lookups. State O(n) additional space when the map can hold every input element."
+        }
+      ]
+    },
+    {
+      "id": "dsa-arrays",
+      "title": "Arrays & strings: maintain one useful invariant",
+      "track": "dsa",
+      "minutes": 45,
+      "priority": "core",
+      "summary": "Use running state, two pointers and sliding windows to replace unnecessary nested loops. Practice explaining what each pointer means.",
+      "sections": [
+        {
+          "title": "Start with a contract and a simple solution",
+          "html": "<p>Before coding, ask what the function returns, whether input can be empty, whether you may modify it, and whether order matters. Explain a correct simple approach, then identify what is repeated. For buying and selling stock once, brute force considers every buy/sell pair. The repeated question is the lowest earlier purchase price. Keeping a running minimum removes the inner loop.</p><p>For prices <code>[7, 1, 5, 3, 6, 4]</code>, track the lowest price seen and the best profit. At six, the minimum earlier price is one, so profit is five. On decreasing prices, return zero because making no trade is allowed. You may only sell after buying; finding a global maximum and global minimum independently can violate this order.</p>"
+        },
+        {
+          "title": "Two pointers are roles, not magic",
+          "html": "<p>In Move Zeroes, the read pointer inspects every element and the write pointer identifies the next position for a nonzero value. Before each iteration, positions before write contain all previously encountered nonzero values in their original order. Copy each nonzero to write, then fill the remaining suffix with zeroes. This is linear time and constant additional space.</p><p>For <code>[0, 1, 0, 3, 12]</code>, reading one writes it at index zero; reading three writes it at index one; reading twelve writes it at index two. The suffix becomes two zeroes. Copying into earlier positions is safe because the write pointer never passes the read pointer. Clarify that this function mutates the provided array.</p>"
+        },
+        {
+          "title": "Sliding windows: grow, repair, measure",
+          "html": "<p>A window is a contiguous range with a useful property. For the longest substring without repeated characters, the property is that every character appears once. Advance the right boundary one character at a time. If its previous occurrence lies inside the current window, move left just beyond that occurrence. Record the latest position and update the best length.</p><p>Dry-run <code>abba</code>: the first two characters form a valid window of length two. The second b moves left to index two. When a appears again, its previous position is outside the current window, so left must stay at two. Use <code>Math.max(left, previous + 1)</code>. Setting left unconditionally would move it backward and accept an invalid window.</p>"
+        },
+        {
+          "title": "Explain and test like an interviewer can follow",
+          "html": "<p>Do not merely say “I used two pointers.” Name the meaning of each pointer, the invariant, and why no possible answer is skipped. With a sliding window, the left boundary excludes exactly the characters that would violate the constraint. With stock profit, the running minimum preserves the best purchase option for every future sale.</p><p>Count total pointer movement rather than multiplying visible loops automatically. A shrinking loop nested inside a growing loop can still be O(n) when each pointer advances at most n times. For strings, state the unit you count. These exercises use <code>Array.from(s)</code> for Unicode code points, which creates O(n) additional storage. Test all-equal values, already-correct inputs, empty arrays and a repeat outside the current window.</p>"
+        }
+      ],
+      "checks": [
+        "I clarify whether mutation is allowed and whether relative order must stay the same.",
+        "I can dry-run Move Zeroes and name the read/write invariant.",
+        "I can explain why a sliding-window left boundary never moves backward.",
+        "I account for Array.from(s) in the space complexity."
+      ],
+      "questions": [
+        {
+          "q": "When can nested loops still be linear?",
+          "a": "When their total work is bounded by a linear number of pointer advances. For example, each element enters and leaves a sliding window at most once."
+        },
+        {
+          "q": "Why is the global minimum/global maximum stock solution wrong?",
+          "a": "The maximum might occur before the minimum. A sale must come after the purchase."
+        },
+        {
+          "q": "What makes a window different from a subsequence?",
+          "a": "A window is contiguous. A subsequence can skip elements while preserving order."
+        }
+      ]
+    },
+    {
+      "id": "dsa-lists",
+      "title": "Linked lists: save the connection before changing it",
+      "track": "dsa",
+      "minutes": 50,
+      "priority": "core",
+      "summary": "Build confidence with reversal, slow/fast pointers, dummy nodes and fixed gaps. Draw the nodes before writing pointer updates.",
+      "sections": [
+        {
+          "title": "Understand nodes and references",
+          "html": "<p>A singly linked list consists of nodes with a value and a reference to the next node. The last node points to <code>null</code>. Unlike an array, a list does not provide constant-time access by index. Walking to position k requires following links. Updating a known node's next reference is constant time, but finding that node may not be.</p><pre><code>class ListNode {\n  constructor(val = 0, next = null) {\n    this.val = val;\n    this.next = next;\n  }\n}</code></pre><p>The variable head is a reference to the first node. Assigning another variable to head does not clone the list. If you change a node through either reference, both observe the same mutation. Clarify whether you may reuse nodes and whether the list can contain a cycle.</p>"
+        },
+        {
+          "title": "Reversal: three references, one invariant",
+          "html": "<p>To reverse <code>1 → 2 → 3 → null</code>, maintain prev as the reversed prefix and curr as the next node to process. First save <code>curr.next</code>. Then point curr back to prev, advance prev to curr, and advance curr to the saved next node. If you overwrite curr.next before saving it, you lose access to the remaining suffix.</p><p>After processing one, prev represents <code>1 → null</code> and curr points at two. After processing two, prev represents <code>2 → 1 → null</code>. At completion, curr is null and prev is the new head. This iterative version uses O(1) additional space. Recursive reversal uses O(n) call-stack space and may exceed JavaScript's recursion limit for long lists.</p>"
+        },
+        {
+          "title": "Slow/fast pointers and a deliberate gap",
+          "html": "<p>For the middle node, slow advances once while fast advances twice. When fast reaches the end, slow is halfway through. The supplied implementation returns the second middle for an even-length list; clarify that convention. For cycle detection, compare node references, not node values. Equal values can appear in different nodes without any cycle.</p><p>To remove the nth node from the end, use two pointers separated by n links starting from a dummy node. Move both until the leading pointer is at the tail. The trailing pointer is now just before the node to remove. The dummy node makes deleting the original head follow the same rule as other deletions. State whether invalid n should be rejected; the exercise does so explicitly.</p>"
+        },
+        {
+          "title": "Merge carefully; know the deletion trick's limit",
+          "html": "<p>To merge two sorted lists, attach the smaller current node to a growing result, then advance that list. A dummy head avoids special handling for the first selection. Attach the unfinished remainder when one list runs out. This reuses the original nodes, so it changes their links and assumes two acyclic input lists with no shared nodes.</p><p>If given only a non-tail node to delete, copy its successor's value and bypass the successor. This removes the logical value at the supplied position, but it does not destroy that exact node object. It cannot work for the tail because there is no successor to copy. Test empty lists where allowed, one node, two nodes, deleting the head and lists with duplicate values.</p>"
+        }
+      ],
+      "checks": [
+        "I save the next node before changing its link during reversal.",
+        "I compare node identity when detecting a cycle.",
+        "I can explain what a dummy node simplifies.",
+        "I state even-length middle and invalid-n behavior.",
+        "I explain why delete-given-node cannot delete a tail."
+      ],
+      "questions": [
+        {
+          "q": "Why use a dummy head?",
+          "a": "It gives a stable predecessor even when the first real node changes, removing a special case from merge and deletion logic."
+        },
+        {
+          "q": "Can equal values prove a cycle?",
+          "a": "No. A cycle means revisiting the same node object, not encountering the same value in different nodes."
+        },
+        {
+          "q": "Does O(1) deletion mean lists always delete faster than arrays?",
+          "a": "No. It assumes the required node or predecessor is already known. Searching a singly linked list is O(n)."
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "two-sum",
+      "title": "Two Sum",
+      "difficulty": "Easy",
+      "pattern": "Map · complement lookup",
+      "minutes": 15,
+      "prompt": "Return the indices of two different elements that sum to target. Return [] when no pair exists. Do not modify nums.",
+      "example": "nums = [2, 7, 11, 15], target = 9 → [0, 1]",
+      "hint": "For each value x, ask whether target − x appeared earlier. Store indices, not just membership.",
+      "code": "function twoSum(nums, target) {\n  const seen = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const needed = target - nums[i];\n    if (seen.has(needed)) return [seen.get(needed), i];\n    seen.set(nums[i], i);\n  }\n  return [];\n}",
+      "explanation": "Before processing i, seen describes only earlier elements. A found complement therefore uses a different index. Looking up before inserting also handles two equal values: with [3, 3], the first 3 is stored and the second finds it. Returning any valid pair is acceptable under this contract; ask if a specific pair order is required.",
+      "complexity": "Expected O(n) time; O(n) extra space.",
+      "tests": [
+        "[3,3], 6 → [0,1]",
+        "[-3,4,3,90], 0 → [0,2]",
+        "[1,2,3], 20 → []",
+        "[], 0 → []"
+      ]
+    },
+    {
+      "id": "contains-duplicate",
+      "title": "Contains Duplicate",
+      "difficulty": "Easy",
+      "pattern": "Set · membership",
+      "minutes": 10,
+      "prompt": "Return true if any value occurs at least twice in an array of numbers.",
+      "example": "[1, 2, 3, 1] → true",
+      "hint": "Stop at the first value already in your set.",
+      "code": "function containsDuplicate(nums) {\n  const seen = new Set();\n  for (const value of nums) {\n    if (seen.has(value)) return true;\n    seen.add(value);\n  }\n  return false;\n}",
+      "explanation": "Each successful membership check means an earlier element had the same value, so you can return immediately. If the loop finishes, every value was new. A set is sufficient because the question asks only whether a duplicate exists, not its index or count. Sorting is another option but usually costs O(n log n) and can mutate the array.",
+      "complexity": "Expected O(n) time; O(n) extra space.",
+      "tests": [
+        "[1,2,3,4] → false",
+        "[0,0] → true",
+        "[] → false",
+        "[-1,2,-1] → true"
+      ]
+    },
+    {
+      "id": "valid-anagram",
+      "title": "Valid Anagram",
+      "difficulty": "Easy",
+      "pattern": "Map · frequency counting",
+      "minutes": 15,
+      "prompt": "Return whether two strings contain the same Unicode code points with the same frequencies. Matching is case-sensitive; spaces count.",
+      "example": "s = 'anagram', t = 'nagaram' → true",
+      "hint": "Count the first string. Consume counts with the second string and reject a missing character.",
+      "code": "function isAnagram(s, t) {\n  const counts = new Map();\n  for (const ch of s) {\n    counts.set(ch, (counts.get(ch) ?? 0) + 1);\n  }\n  for (const ch of t) {\n    if (!counts.has(ch)) return false;\n    const remaining = counts.get(ch) - 1;\n    if (remaining === 0) counts.delete(ch);\n    else counts.set(ch, remaining);\n  }\n  return counts.size === 0;\n}",
+      "explanation": "The map records unmatched occurrences from s. Removing a key when its count reaches zero lets a second occurrence fail immediately if none remain. At the end, an empty map proves every occurrence was matched. This avoids relying on UTF-16 string length; it still treats differently normalized Unicode spellings as different unless normalization is requested.",
+      "complexity": "Expected O(n + m) time; O(u) extra space for u distinct code points in s.",
+      "tests": [
+        "'aab', 'abb' → false",
+        "'', '' → true",
+        "'A', 'a' → false",
+        "'😀a', 'a😀' → true"
+      ]
+    },
+    {
+      "id": "intersection",
+      "title": "Intersection of Two Arrays",
+      "difficulty": "Easy",
+      "pattern": "Set · unique membership",
+      "minutes": 12,
+      "prompt": "Return each value present in both number arrays exactly once. Any result order is acceptable.",
+      "example": "[1, 2, 2, 1] and [2, 2] → [2]",
+      "hint": "Use a set for the first array, then remove a value after including it.",
+      "code": "function intersection(nums1, nums2) {\n  const available = new Set(nums1);\n  const result = [];\n  for (const value of nums2) {\n    if (available.has(value)) {\n      result.push(value);\n      available.delete(value);\n    }\n  }\n  return result;\n}",
+      "explanation": "The set answers membership in the first array. Deleting after a match ensures repeated occurrences in the second array cannot create duplicate output. For [4,9,5] and [9,4,9,8,4], the answer is [9,4]. If the interviewer wants duplicates preserved, that is a different contract: use frequency counts and decrement them on each match.",
+      "complexity": "Expected O(n + m) time; O(n) auxiliary space, plus the result.",
+      "tests": [
+        "[4,9,5], [9,4,9,8,4] → [9,4]",
+        "[], [1] → []",
+        "[1,1], [1,1] → [1]",
+        "[1,2], [3,4] → []"
+      ]
+    },
+    {
+      "id": "stock-profit",
+      "title": "Best Time to Buy and Sell Stock",
+      "difficulty": "Easy",
+      "pattern": "Running minimum",
+      "minutes": 15,
+      "prompt": "Given daily prices, return the greatest profit from one purchase followed by one sale. Return zero if no profitable trade exists.",
+      "example": "[7, 1, 5, 3, 6, 4] → 5",
+      "hint": "For each possible sale day, what is the cheapest price strictly before it?",
+      "code": "function maxProfit(prices) {\n  let minimum = Infinity;\n  let best = 0;\n  for (const price of prices) {\n    best = Math.max(best, price - minimum);\n    minimum = Math.min(minimum, price);\n  }\n  return best;\n}",
+      "explanation": "Before each iteration, minimum is the cheapest earlier purchase price. Evaluate today's sale before updating that minimum. The initial calculation produces negative infinity, which cannot improve zero. This naturally handles an empty input and one day. Do not add every upward difference; that solves the different problem where multiple transactions are allowed.",
+      "complexity": "O(n) time; O(1) extra space.",
+      "tests": [
+        "[7,6,4,3,1] → 0",
+        "[1,2] → 1",
+        "[2] → 0",
+        "[] → 0",
+        "[2,4,1] → 2"
+      ]
+    },
+    {
+      "id": "move-zeroes",
+      "title": "Move Zeroes",
+      "difficulty": "Easy",
+      "pattern": "Two pointers · stable compaction",
+      "minutes": 15,
+      "prompt": "Move every zero to the end in place while preserving the relative order of nonzero values. Return the same array for convenience.",
+      "example": "[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]",
+      "hint": "First compact nonzero values into a prefix. Then fill the unused suffix.",
+      "code": "function moveZeroes(nums) {\n  let write = 0;\n  for (let read = 0; read < nums.length; read++) {\n    if (nums[read] !== 0) {\n      nums[write] = nums[read];\n      write++;\n    }\n  }\n  while (write < nums.length) {\n    nums[write] = 0;\n    write++;\n  }\n  return nums;\n}",
+      "explanation": "The read pointer visits every original position while write advances only for nonzero values. Since write never exceeds read, copying does not overwrite an unread value. After the first loop, the prefix contains the nonzero values in order. The second loop replaces any leftover values with zeroes. Using filter would allocate another array and violate the constant-space goal.",
+      "complexity": "O(n) time; O(1) extra space. Mutates nums.",
+      "tests": [
+        "[0,0] → [0,0]",
+        "[1,2] → [1,2]",
+        "[] → []",
+        "[0,-1,0,2] → [-1,2,0,0]"
+      ]
+    },
+    {
+      "id": "group-anagrams",
+      "title": "Group Anagrams",
+      "difficulty": "Medium",
+      "pattern": "Map · canonical signature",
+      "minutes": 20,
+      "prompt": "Group strings containing the same Unicode code points with the same frequencies. Group order does not matter; matching is case-sensitive.",
+      "example": "['eat','tea','tan','ate','nat','bat'] → [['eat','tea','ate'],['tan','nat'],['bat']]",
+      "hint": "Anagrams become identical when their character arrays are sorted.",
+      "code": "function groupAnagrams(words) {\n  const groups = new Map();\n  for (const word of words) {\n    const key = JSON.stringify(Array.from(word).sort());\n    if (!groups.has(key)) groups.set(key, []);\n    groups.get(key).push(word);\n  }\n  return Array.from(groups.values());\n}",
+      "explanation": "The sorted code-point array is a canonical representation: anagrams produce the same sequence. JSON.stringify preserves character boundaries in the map key. For a lowercase-English-only contract, use a 26-element frequency signature for O(k) work per word instead of sorting. Explain the simpler sorting solution first and optimize when the input constraints justify it.",
+      "complexity": "For n words of length at most k: O(nk log k) time; O(nk) storage including keys and output references.",
+      "tests": [
+        "[''] → [['']]",
+        "['a','a'] → [['a','a']]",
+        "[] → []",
+        "['aab','aba','abb'] → [['aab','aba'],['abb']]"
+      ]
+    },
+    {
+      "id": "longest-substring",
+      "title": "Longest Substring Without Repeating Characters",
+      "difficulty": "Medium",
+      "pattern": "Sliding window · last-seen Map",
+      "minutes": 25,
+      "prompt": "Return the longest length of a contiguous substring without repeated Unicode code points.",
+      "example": "'abcabcbb' → 3; 'abba' → 2",
+      "hint": "Move left past a repeated character only if the repeat is inside your current window.",
+      "code": "function lengthOfLongestSubstring(s) {\n  const chars = Array.from(s);\n  const lastSeen = new Map();\n  let left = 0;\n  let best = 0;\n  for (let right = 0; right < chars.length; right++) {\n    const ch = chars[right];\n    if (lastSeen.has(ch)) {\n      left = Math.max(left, lastSeen.get(ch) + 1);\n    }\n    lastSeen.set(ch, right);\n    best = Math.max(best, right - left + 1);\n  }\n  return best;\n}",
+      "explanation": "After updating left, the window contains no duplicate. Every shorter window ending at right cannot improve on its length, so measure the longest valid one. Math.max prevents an old occurrence outside the current window from moving left backward. The answer for 'pwwkew' is three: 'wke' is contiguous, while 'pwke' is only a subsequence.",
+      "complexity": "Expected O(n) time; O(n) extra space for the code-point array and map.",
+      "tests": [
+        "'' → 0",
+        "'bbbbb' → 1",
+        "'abba' → 2",
+        "'pwwkew' → 3",
+        "'😀a😀' → 2"
+      ]
+    },
+    {
+      "id": "reverse-list",
+      "title": "Reverse Linked List",
+      "difficulty": "Easy",
+      "pattern": "Pointer reversal",
+      "minutes": 20,
+      "prompt": "Reverse an acyclic singly linked list in place and return its new head. Nodes have val and next fields; empty head is null.",
+      "example": "1 → 2 → 3 → null becomes 3 → 2 → 1 → null",
+      "hint": "Save the next node before overwriting the current node's next reference.",
+      "code": "function reverseList(head) {\n  let prev = null;\n  let curr = head;\n  while (curr !== null) {\n    const next = curr.next;\n    curr.next = prev;\n    prev = curr;\n    curr = next;\n  }\n  return prev;\n}",
+      "explanation": "At every step, prev is the reversed prefix and curr is the unprocessed suffix. Saving next keeps that suffix reachable while you reverse one connection. The old head becomes the tail because its first updated next is null. When curr becomes null, prev points to the new head. Draw all three references during the first two iterations before coding.",
+      "complexity": "O(n) time; O(1) extra space. Reuses and mutates existing nodes.",
+      "tests": [
+        "null → null",
+        "1 → null remains 1 → null",
+        "1 → 2 becomes 2 → 1",
+        "Duplicate values reverse by node position, not value"
+      ]
+    },
+    {
+      "id": "middle-list",
+      "title": "Middle of the Linked List",
+      "difficulty": "Easy",
+      "pattern": "Slow and fast pointers",
+      "minutes": 12,
+      "prompt": "Return the middle node of an acyclic singly linked list. For even length return the second middle. Return null for an empty list.",
+      "example": "1 → 2 → 3 → 4 → 5 → 6 returns the node with value 4",
+      "hint": "For every one step of slow, move fast two steps.",
+      "code": "function middleNode(head) {\n  let slow = head;\n  let fast = head;\n  while (fast !== null && fast.next !== null) {\n    slow = slow.next;\n    fast = fast.next.next;\n  }\n  return slow;\n}",
+      "explanation": "After k iterations, slow has moved k links and fast has moved 2k. When fast reaches the end, slow is at the required middle. The guard checks fast before reading fast.next, preventing a null access. This loop convention intentionally gives the second middle in an even-length list; a different requirement needs a different stopping condition.",
+      "complexity": "O(n) time; O(1) extra space. Does not mutate the list.",
+      "tests": [
+        "null → null",
+        "[1] → node 1",
+        "[1,2] → node 2",
+        "[1,2,3,4,5] → node 3"
+      ]
+    },
+    {
+      "id": "linked-list-cycle",
+      "title": "Linked List Cycle",
+      "difficulty": "Easy",
+      "pattern": "Floyd's slow/fast pointers",
+      "minutes": 20,
+      "prompt": "Return whether following next references can revisit a node. Do not modify the list.",
+      "example": "1 → 2 → 3 → 4, with node 4 pointing back to node 2, returns true.",
+      "hint": "Inside a cycle, a fast pointer gains one position on slow each iteration.",
+      "code": "function hasCycle(head) {\n  let slow = head;\n  let fast = head;\n  while (fast !== null && fast.next !== null) {\n    slow = slow.next;\n    fast = fast.next.next;\n    if (slow === fast) return true;\n  }\n  return false;\n}",
+      "explanation": "If there is no cycle, fast eventually reaches null. If both enter a cycle of length c, their relative position changes by one modulo c per iteration, so they must meet. Compare references after moving; comparing both initial pointers would incorrectly report every nonempty list as cyclic. A set of visited nodes is a simpler O(n)-space alternative.",
+      "complexity": "O(n) time; O(1) extra space.",
+      "tests": [
+        "null → false",
+        "One node pointing to null → false",
+        "One node pointing to itself → true",
+        "Two different nodes both valued 1, ending at null → false"
+      ]
+    },
+    {
+      "id": "merge-lists",
+      "title": "Merge Two Sorted Lists",
+      "difficulty": "Easy",
+      "pattern": "Dummy head · two pointers",
+      "minutes": 20,
+      "prompt": "Merge two nondecreasing, acyclic singly linked lists by reusing their nodes. Assume the input lists share no nodes. Return the merged head.",
+      "example": "[1,2,4] and [1,3,4] → [1,1,2,3,4,4]",
+      "hint": "Keep tail at the last node already added. Attach whichever list currently starts smaller.",
+      "code": "function mergeTwoLists(a, b) {\n  const dummy = { val: 0, next: null };\n  let tail = dummy;\n  while (a !== null && b !== null) {\n    if (a.val <= b.val) {\n      tail.next = a;\n      a = a.next;\n    } else {\n      tail.next = b;\n      b = b.next;\n    }\n    tail = tail.next;\n  }\n  tail.next = a ?? b;\n  return dummy.next;\n}",
+      "explanation": "The result prefix stays sorted because each selected node is the smallest unmerged head. A dummy node makes attaching the first node identical to later attachments. Once either input is empty, the other remainder is already sorted and can be attached at once. The <= comparison takes from the first list on ties. Tell the interviewer that original next links are reused and changed.",
+      "complexity": "O(n + m) time; O(1) additional space excluding the reused nodes.",
+      "tests": [
+        "[], [] → []",
+        "[], [0] → [0]",
+        "[1,1], [1] → [1,1,1]",
+        "[-3,2], [-2,4] → [-3,-2,2,4]"
+      ]
+    },
+    {
+      "id": "remove-nth",
+      "title": "Remove Nth Node From End",
+      "difficulty": "Medium",
+      "pattern": "Dummy head · fixed pointer gap",
+      "minutes": 25,
+      "prompt": "Remove the nth node from the end of an acyclic singly linked list and return the head. Reject non-integer n or n outside 1..length with RangeError.",
+      "example": "[1,2,3,4,5], n = 2 → [1,2,3,5]",
+      "hint": "Start both pointers at a dummy node. Advance fast n links before moving them together.",
+      "code": "function removeNthFromEnd(head, n) {\n  if (!Number.isInteger(n) || n < 1) {\n    throw new RangeError('n must be a positive integer');\n  }\n  const dummy = { val: 0, next: head };\n  let fast = dummy;\n  let slow = dummy;\n  for (let i = 0; i < n; i++) {\n    fast = fast.next;\n    if (fast === null) throw new RangeError('n exceeds length');\n  }\n  while (fast.next !== null) {\n    fast = fast.next;\n    slow = slow.next;\n  }\n  slow.next = slow.next.next;\n  return dummy.next;\n}",
+      "explanation": "After the initial advance, fast stays n links ahead of slow. When fast is at the last node, slow is immediately before the target. Bypass that target with one next update. When n equals the list length, slow remains at dummy, so deleting the head needs no separate branch. Invalid input is detected before any list link is changed.",
+      "complexity": "O(n) time for n list nodes; O(1) extra space.",
+      "tests": [
+        "[1], 1 → []",
+        "[1,2], 2 → [2]",
+        "[1,2], 1 → [1]",
+        "[], 1 → RangeError",
+        "[1,2], 3 → RangeError"
+      ]
+    },
+    {
+      "id": "delete-given-node",
+      "title": "Delete a Given Non-Tail Node",
+      "difficulty": "Medium",
+      "pattern": "Copy successor · bypass",
+      "minutes": 12,
+      "prompt": "Given only a reference to a non-tail node in a singly linked list, remove the logical element at that position. You do not have the head or predecessor.",
+      "example": "List [4,5,1,9], given the node holding 5 → list becomes [4,1,9].",
+      "hint": "You cannot reach the predecessor. Can the supplied node take its successor's place?",
+      "code": "function deleteNode(node) {\n  if (node === null || node.next === null) {\n    throw new Error('A non-tail node is required');\n  }\n  node.val = node.next.val;\n  node.next = node.next.next;\n}",
+      "explanation": "Copying the successor's value makes the supplied node represent the next logical element. Bypassing that successor then shortens the list. This changes the supplied node object and removes its successor from the chain; it does not remove that exact object. The method is inappropriate when external code depends on stable node identity or when the node is the tail.",
+      "complexity": "O(1) time; O(1) extra space.",
+      "tests": [
+        "[4,5,1,9], node 5 → [4,1,9]",
+        "[1,2], node 1 → [2]",
+        "Tail node → throws",
+        "null → throws"
+      ]
+    },
+    {
+      "id": "lru-cache",
+      "title": "LRU Cache — Stretch Exercise",
+      "difficulty": "Medium",
+      "pattern": "Map · recency ordering",
+      "minutes": 35,
+      "prompt": "Implement an integer-value cache with get(key) and put(key, value). Reads and writes mark a key most recently used. When full, evict the least recently used key. get returns -1 on a miss. Capacity must be a positive integer.",
+      "example": "Capacity 2: put(1,1), put(2,2), get(1), put(3,3) evicts key 2.",
+      "hint": "JavaScript Map preserves insertion order. Delete and reinsert a key to refresh its recency.",
+      "code": "class LRUCache {\n  constructor(capacity) {\n    if (!Number.isInteger(capacity) || capacity < 1) {\n      throw new RangeError('capacity must be a positive integer');\n    }\n    this.capacity = capacity;\n    this.items = new Map();\n  }\n\n  get(key) {\n    if (!this.items.has(key)) return -1;\n    const value = this.items.get(key);\n    this.items.delete(key);\n    this.items.set(key, value);\n    return value;\n  }\n\n  put(key, value) {\n    this.items.delete(key);\n    this.items.set(key, value);\n    if (this.items.size > this.capacity) {\n      const oldestKey = this.items.keys().next().value;\n      this.items.delete(oldestKey);\n    }\n  }\n}",
+      "explanation": "Map iteration begins with the least recently inserted surviving key. Refreshing a key by delete-and-set makes it most recent; simply setting an existing key would leave its old position. On overflow, delete the first key. Explain that the classic language-independent design uses a hash map plus a doubly linked list: the map finds nodes, and the list moves/removes them in O(1). This exercise models recency; Redis eviction behavior is a separate system-design discussion.",
+      "complexity": "Common Map implementations provide expected constant-time lookup and updates; this approach relies on Map iteration behavior and is not a universal worst-case O(1) guarantee. O(capacity) space.",
+      "tests": [
+        "Capacity 2: put(1,1), put(2,2), get(1) → 1, put(3,3), get(2) → -1",
+        "Capacity 1: put(1,10), put(2,20), get(1) → -1",
+        "Update existing key: put(1,1), put(1,9), get(1) → 9",
+        "Capacity 0 → RangeError"
+      ]
+    }
+  ]
+}

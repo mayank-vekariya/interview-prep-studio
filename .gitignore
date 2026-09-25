@@ -1,0 +1,9 @@
+node_modules/
+rag-index.json
+examples/rag-index.json
+dist/examples/rag-index.json
+.env
+.env.*
+!.env.example
+*.log
+test-results/
