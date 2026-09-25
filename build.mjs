@@ -15,4 +15,7 @@ const data = {lessons:[...dsa.lessons,...backend.lessons,...interview.lessons],e
 await writeFile(new URL('./dist/data.js',import.meta.url),'window.COURSE = '+JSON.stringify(data,null,2)+';\n');
 await mkdir(new URL('./dist/examples/',import.meta.url),{recursive:true});
 for(const name of ['rag.mjs','movies.json']) await copyFile(new URL('./examples/'+name,import.meta.url),new URL('./dist/examples/'+name,import.meta.url));
+await mkdir(new URL('./dist/downloads/',import.meta.url),{recursive:true});
+await copyFile(new URL('./output/pdf/Dhruvi_Technical_Interview_Study_Guide.pdf',import.meta.url),
+  new URL('./dist/downloads/Dhruvi_Technical_Interview_Study_Guide.pdf',import.meta.url));
 console.log(`Built ${data.lessons.length+4} lessons, ${data.exercises.length} exercises and ${data.mocks.length} mocks.`);
